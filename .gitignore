@@ -1,0 +1,15 @@
+# Build artifacts
+/dist/
+*.exe
+*.test
+/evalctl
+
+# Go
+*.out
+
+# OS/editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
