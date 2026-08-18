@@ -1,0 +1,10 @@
+name: basic-example
+# macOS/Linux: system.py (after `chmod +x system.py`).
+# Windows: system.cmd - Windows cannot exec a .py file directly, so this
+# repo's examples wrap Python scripts in a tiny .cmd launcher.
+system: system.py
+dataset: tasks.jsonl
+fail_below: 0.8
+graders:
+  - name: exact_match
+    params: {}

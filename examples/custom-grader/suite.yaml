@@ -1,0 +1,11 @@
+name: custom-grader-example
+# macOS/Linux: responder.py / grader_keyword.py (after `chmod +x`).
+# Windows: responder.cmd / grader_keyword.cmd.
+system: responder.py
+dataset: tasks.jsonl
+fail_below: 1.0
+graders:
+  # Not a built-in name, so evalctl resolves it as an executable path
+  # relative to this suite.yaml and runs it as a custom grader.
+  - name: grader_keyword.py
+    params: {}

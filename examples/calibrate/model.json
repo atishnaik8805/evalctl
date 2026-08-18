@@ -1,0 +1,6 @@
+[
+  {"task_id": "t1", "grader_name": "llm_judge", "score": 0.95, "passed": true},
+  {"task_id": "t2", "grader_name": "llm_judge", "score": 0.3, "passed": false},
+  {"task_id": "t3", "grader_name": "llm_judge", "score": 0.3, "passed": false},
+  {"task_id": "t4", "grader_name": "llm_judge", "score": 0.1, "passed": false}
+]

@@ -1,0 +1,3 @@
+{"id": "t1", "input": "hello", "metadata": {"expected": "HELLO"}}
+{"id": "t2", "input": "world", "metadata": {"expected": "WORLD"}}
+{"id": "t3", "input": "evalctl", "metadata": {"expected": "EVALCTL"}}
