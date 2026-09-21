@@ -13,3 +13,6 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
+
+# AI notes
+.ai/
