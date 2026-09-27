@@ -46,21 +46,30 @@ func runCommand(args []string) error {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	var allOutcomes []protocol.Outcome
+	var allTraces []report.Trace
 
 	for _, tsk := range tasks {
 		tsk := tsk
 		wg.Add(1)
 		pool.Go(func() {
 			defer wg.Done()
-			outcomes := runTask(context.Background(), s, systemPath, tsk, timeout)
+			outcomes, transcript, ok := runTask(context.Background(), s, systemPath, tsk, timeout)
 			mu.Lock()
 			allOutcomes = append(allOutcomes, outcomes...)
+			if ok {
+				allTraces = append(allTraces, report.Trace{
+					TaskID: tsk.ID,
+					Input:  tsk.Input,
+					Output: transcript.Output,
+					Steps:  transcript.Steps,
+				})
+			}
 			mu.Unlock()
 		})
 	}
 	wg.Wait()
 
-	rep := report.BuildSuiteRunReport(s.Name, allOutcomes, s.FailBelow)
+	rep := report.BuildSuiteRunReport(s.Name, allOutcomes, allTraces, s.FailBelow)
 	rep.PrintSummary(os.Stdout)
 
 	if *outputPath != "" {
@@ -82,8 +91,11 @@ func runCommand(args []string) error {
 
 // runTask evaluates one task against the suite's system, then every
 // configured grader. Consumer subprocess failures (FR-003) produce a
-// failing Outcome per grader rather than aborting the run.
-func runTask(ctx context.Context, s *suite.Suite, systemPath string, tsk protocol.Task, timeout time.Duration) []protocol.Outcome {
+// failing Outcome per grader rather than aborting the run. The returned
+// bool reports whether a transcript was actually produced (research.md
+// §2) — false means the returned Transcript is a zero value and must not
+// be turned into a report.Trace.
+func runTask(ctx context.Context, s *suite.Suite, systemPath string, tsk protocol.Task, timeout time.Duration) ([]protocol.Outcome, protocol.Transcript, bool) {
 	reqBody := protocol.ConsumerRequest{ProtocolVersion: protocol.ProtocolVersion, Task: tsk}
 	reqLine, _ := json.Marshal(reqBody)
 
@@ -93,19 +105,19 @@ func runTask(ctx context.Context, s *suite.Suite, systemPath string, tsk protoco
 		if res.FailureReason == "timeout" {
 			reason = protocol.ErrTimeout
 		}
-		return failAllGraders(s.Graders, tsk.ID, reason)
+		return failAllGraders(s.Graders, tsk.ID, reason), protocol.Transcript{}, false
 	}
 
 	var transcript protocol.Transcript
 	if err := json.Unmarshal(res.Line, &transcript); err != nil {
-		return failAllGraders(s.Graders, tsk.ID, protocol.ErrConsumerError)
+		return failAllGraders(s.Graders, tsk.ID, protocol.ErrConsumerError), protocol.Transcript{}, false
 	}
 
 	outcomes := make([]protocol.Outcome, 0, len(s.Graders))
 	for _, g := range s.Graders {
 		outcomes = append(outcomes, runGrader(ctx, s, tsk, transcript, g, timeout))
 	}
-	return outcomes
+	return outcomes, transcript, true
 }
 
 func failAllGraders(graders []suite.GraderConfig, taskID, reason string) []protocol.Outcome {

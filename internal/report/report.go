@@ -17,11 +17,22 @@ type SuiteRunReport struct {
 	OverallScore float64            `json:"overall_score"`
 	Outcomes     []protocol.Outcome `json:"outcomes"`
 	Passed       bool               `json:"passed"`
+	Traces       []Trace            `json:"traces"`
+}
+
+// Trace is one task's produced transcript, persisted additively for
+// evalctl analyze (FR-001, research.md §2). Only tasks whose consumer
+// call actually produced a transcript get an entry.
+type Trace struct {
+	TaskID string          `json:"task_id"`
+	Input  json.RawMessage `json:"input"`
+	Output json.RawMessage `json:"output"`
+	Steps  []protocol.Step `json:"steps,omitempty"`
 }
 
 // BuildSuiteRunReport aggregates per-grader mean scores and the overall
 // score, and applies the fail_below gate (nil means the run always passes).
-func BuildSuiteRunReport(suiteName string, outcomes []protocol.Outcome, failBelow *float64) SuiteRunReport {
+func BuildSuiteRunReport(suiteName string, outcomes []protocol.Outcome, traces []Trace, failBelow *float64) SuiteRunReport {
 	sums := make(map[string]float64)
 	counts := make(map[string]int)
 	for _, o := range outcomes {
@@ -52,6 +63,7 @@ func BuildSuiteRunReport(suiteName string, outcomes []protocol.Outcome, failBelo
 		OverallScore: overall,
 		Outcomes:     outcomes,
 		Passed:       passed,
+		Traces:       traces,
 	}
 }
 

@@ -42,10 +42,49 @@ go test ./...
 - `evalctl calibrate --human <path> --model <path>` — compare human- and
   model-produced `Outcome[]` files.
 - `evalctl list-graders` — print the built-in graders and their `params`.
+- `evalctl analyze --traces <path> [--annotations <path>] [--addr host:port] [--llm-endpoint <url>] [--llm-api-key-env <VAR>]` —
+  start a local web UI for open-coding and axial-coding raw AI traces.
 
 See `specs/001-universal-eval-framework/contracts/cli-commands.md` for the
 full contract, and `specs/001-universal-eval-framework/quickstart.md` for a
 scenario-level walkthrough.
+
+## `evalctl analyze`: annotate traces in a local web UI
+
+`evalctl analyze` starts a local, single-user web UI (no Node/build step —
+plain HTML/CSS/JS embedded in the binary) for open-coding and axial-coding
+AI traces. It accepts either input, with no different setup steps between
+them:
+
+- a (post-`evalctl run --output`) `SuiteRunReport` JSON file, or
+- a standalone raw-trace JSONL file — one `{"id", "input", "output",
+  "steps"}` object per line (`specs/002-trace-analysis-ui/contracts/raw-trace-format.md`).
+
+```sh
+evalctl run --suite examples/basic/suite.yaml --output results.json
+evalctl analyze --traces results.json
+```
+
+Then open `http://localhost:8420` (the default `--addr`).
+
+Flags:
+
+- `--traces <path>` (required) — the `SuiteRunReport` or raw-trace JSONL
+  file to load.
+- `--annotations <path>` — the sidecar JSON file annotations are written
+  to (write-through on every change). Defaults to
+  `<traces>.annotations.json` next to the traces file.
+- `--addr host:port` — address to listen on. Defaults to
+  `localhost:8420`; fails immediately (no retry on another port) if it's
+  already in use.
+- `--llm-endpoint <url>` / `--llm-api-key-env <VAR>` — optional HTTP
+  endpoint for a "suggest with LLM" axial-code grouping proposal. Without
+  `--llm-endpoint`, the feature is simply hidden — manual grouping always
+  works.
+
+See `specs/002-trace-analysis-ui/quickstart.md` for a scenario-level
+walkthrough and `specs/002-trace-analysis-ui/contracts/http-api.md` for
+the full HTTP API this UI is built on.
 
 ## Example: evaluating a system with a built-in grader
 

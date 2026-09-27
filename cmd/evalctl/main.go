@@ -23,6 +23,8 @@ func main() {
 		err = validateCommand(os.Args[2:])
 	case "list-graders":
 		err = listGradersCommand(os.Args[2:])
+	case "analyze":
+		err = analyzeCommand(os.Args[2:])
 	case "-h", "--help", "help":
 		printUsage()
 		return
@@ -45,5 +47,6 @@ Usage:
   evalctl run --suite <path> [--output <path>]
   evalctl calibrate --human <path> --model <path>
   evalctl validate --suite <path>
-  evalctl list-graders`)
+  evalctl list-graders
+  evalctl analyze --traces <path> [--annotations <path>] [--addr host:port] [--llm-endpoint <url>] [--llm-api-key-env <VAR>]`)
 }

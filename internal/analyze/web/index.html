@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>evalctl analyze</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <h1>evalctl analyze</h1>
+    <nav id="view-tabs">
+      <button data-view="traces" class="active">Traces</button>
+      <button data-view="open-codes">Open codes</button>
+      <button data-view="axial-codes">Axial codes</button>
+    </nav>
+    <ul id="trace-list"></ul>
+  </aside>
+  <main id="main">
+    <div id="view-traces" class="view active">
+      <div id="trace-detail"><p class="empty-state">Select a trace to view it.</p></div>
+    </div>
+    <div id="view-open-codes" class="view">
+      <h2>Open codes</h2>
+      <table id="open-codes-table">
+        <thead><tr><th>Label</th><th>Count</th><th>Axial code</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div id="view-axial-codes" class="view">
+      <h2>Axial codes</h2>
+      <div id="axial-codes-board"></div>
+    </div>
+  </main>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>

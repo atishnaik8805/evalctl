@@ -15,7 +15,7 @@ func TestBuildSuiteRunReportAggregation(t *testing.T) {
 		outcome("exact_match", 0.0),
 		outcome("schema_validity", 0.5),
 	}
-	r := BuildSuiteRunReport("suite1", outcomes, nil)
+	r := BuildSuiteRunReport("suite1", outcomes, nil, nil)
 
 	if r.GraderScores["exact_match"] != 0.5 {
 		t.Errorf("exact_match mean = %v, want 0.5", r.GraderScores["exact_match"])
@@ -35,14 +35,24 @@ func TestBuildSuiteRunReportFailBelowGate(t *testing.T) {
 	outcomes := []protocol.Outcome{outcome("exact_match", 0.5)}
 
 	below := 0.8
-	r := BuildSuiteRunReport("suite1", outcomes, &below)
+	r := BuildSuiteRunReport("suite1", outcomes, nil, &below)
 	if r.Passed {
 		t.Error("expected Passed = false when overall_score < fail_below")
 	}
 
 	above := 0.3
-	r2 := BuildSuiteRunReport("suite1", outcomes, &above)
+	r2 := BuildSuiteRunReport("suite1", outcomes, nil, &above)
 	if !r2.Passed {
 		t.Error("expected Passed = true when overall_score >= fail_below")
+	}
+}
+
+func TestBuildSuiteRunReportCopiesTraces(t *testing.T) {
+	traces := []Trace{
+		{TaskID: "t1", Input: []byte(`"in"`), Output: []byte(`"out"`)},
+	}
+	r := BuildSuiteRunReport("suite1", nil, traces, nil)
+	if len(r.Traces) != 1 || r.Traces[0].TaskID != "t1" {
+		t.Errorf("Traces = %+v, want the single passed-in trace", r.Traces)
 	}
 }
